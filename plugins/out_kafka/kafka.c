@@ -164,13 +164,15 @@ int produce_message(struct flb_time *tm, msgpack_object *map,
                                                        val.via.str.size,
                                                        ctx);
                     if (!topic) {
-                        dynamic_topic = flb_malloc(val.via.str.size);
+                        dynamic_topic = flb_malloc(val.via.str.size + 1);
                         if (!dynamic_topic) {
                             flb_errno();
                             /* in this case we use the default topic */
                             break;
                         }
                         strncpy(dynamic_topic, val.via.str.ptr, val.via.str.size);
+                        dynamic_topic[val.via.str.size] = '\0';
+
                         topics = flb_utils_split(dynamic_topic, ',', 1);
                         mk_list_foreach(head, topics) {
                             entry = mk_list_entry(head, struct flb_split_entry, _head);
@@ -180,7 +182,6 @@ int produce_message(struct flb_time *tm, msgpack_object *map,
                                           entry->value);
                             }
                             else {
-                                /* dynamic_topic = flb_strdup((char *) val.via.str.ptr); */
                                 flb_info("[out_kafka] new topic added: %s", dynamic_topic);
                                 break;
                             }
